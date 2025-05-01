@@ -32,13 +32,13 @@ const PasswordStrengthChecker = () => {
   const strength = checkPasswordStrength(password);
 
   return (
-    <div className="mt-6 bg-white p-6 rounded-lg shadow-sm">
-      <h3 className="text-xl font-semibold mb-4">Password Strength Checker</h3>
+    <div className="mt-6 bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+      <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Password Strength Checker</h3>
       <input
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
         placeholder="Enter a password"
       />
       <div className="flex items-center">

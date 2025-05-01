@@ -8,11 +8,11 @@ A web-based application designed to educate users on essential cybersecurity top
 
 ## Description
 
-This platform provides a series of training modules covering fundamental cybersecurity concepts like social engineering, secure browsing, password management, and more. Users progress through modules, complete quizzes, and receive a unique certificate ID upon completion of all modules. The application features persistent progress tracking and a dark mode option for user preference.
+This platform provides a series of engaging training modules covering fundamental cybersecurity concepts like social engineering, secure browsing, password management, and more. Users progress through modules, complete quizzes, and receive a unique certificate ID upon completion of all modules. The application features persistent progress tracking, a dark mode option, and a user-friendly interface designed for effective learning.
 
 ## Features
 
-*   **Interactive Training Modules:** Engaging content covering key cybersecurity areas.
+*   **Interactive & Engaging Training Modules:** Content covering key cybersecurity areas, designed to be informative and accessible.
 *   **Quizzes:** Test understanding at the end of each module (60% required to pass).
 *   **Progress Tracking:** Completed modules are saved locally (`localStorage`).
 *   **Certificate Generation:** Unique ID generated upon completion of all modules.
@@ -22,6 +22,7 @@ This platform provides a series of training modules covering fundamental cyberse
 *   **Responsive Design:** Basic responsiveness provided by Tailwind CSS.
 *   **Auto-Advance:** Automatically navigates to the next module upon passing a quiz.
 *   **Retry Quiz Option:** Allows users to review module content and retry failed quizzes.
+*   **Enhanced User Experience:** Recently updated landing page and text for better engagement.
 
 ## Tech Stack
 
@@ -97,4 +98,4 @@ Contributions are welcome! Please follow standard fork/pull request workflows. *
 
 ## License
 
-*(Specify your license here, e.g., MIT License. If you don't have one, you can add one later.)*
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details (if available) or refer to the standard MIT License text.

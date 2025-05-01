@@ -157,6 +157,21 @@ const CybersecurityTrainingPlatform = () => {
   const toggleDarkMode = () => {
     setDarkMode(prev => !prev);
   };
+
+  // Function to reset all progress
+  const resetProgress = () => {
+    if (window.confirm("Are you sure you want to reset all your progress? This action cannot be undone.")) {
+      setCompletedModules([]);
+      setUniqueID(null);
+      setCurrentModuleId(null); // Go back to landing page
+      try {
+        localStorage.removeItem('completedModules');
+        localStorage.removeItem('uniqueID');
+      } catch (error) {
+        console.error("Error removing data from localStorage:", error);
+      }
+    }
+  };
   
   // Function to render the Module component
   const renderModule = () => {
@@ -189,6 +204,7 @@ const CybersecurityTrainingPlatform = () => {
         completedModules={completedModules}
         startModule={startModule}
         progress={Math.round((completedModules.length / trainingModules.length) * 100)}
+        resetProgress={resetProgress} // Pass resetProgress function
       />
     );
   };
