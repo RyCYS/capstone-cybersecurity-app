@@ -1,6 +1,4 @@
 // src/components/LandingPage.jsx
-// LandingPage looks all good and ready to go *DONE*
-
 import React from 'react';
 import ModuleCard from './ModuleCard';
 import ProgressBar from './ProgressBar';
@@ -17,18 +15,49 @@ import {
   FaLightbulb,
 } from 'react-icons/fa';
 
-// LandingPage component to display the main page content
+/**
+ * @component LandingPage
+ * @description This component serves as the main landing page of the application.
+ * It displays an introduction to the cybersecurity training platform, shows user progress (if any),
+ * lists available training modules, includes promotional sections highlighting benefits,
+ * features user testimonials, and provides a Password Strength Checker tool.
+ *
+ * @props {object} props - The props for the component.
+ * @props {Array<object>} props.trainingModules - An array of all available module objects. Each object
+ * contains details about a module (e.g., id, title, description). Used to display module cards.
+ * @props {Array<string>} props.completedModules - An array of IDs of modules that the user has
+ * successfully completed. Used to calculate progress and determine the state of module cards
+ * (e.g., completed, in progress, locked).
+ * @props {function} props.startModule - A function passed from `App.jsx`. This function is called
+ * when the user clicks a button to start or resume a specific module. It typically takes the module ID
+ * as an argument.
+ * @props {number} [props.progress=0] - A number (intended to be 0-100) representing the overall
+ * training progress. While this prop is passed, the component primarily derives progress visibility
+ * and module states from `completedModules.length` and `trainingModules.length`.
+ * @props {function} props.resetProgress - A function passed from `App.jsx`. This function is called
+ * when the user clicks the "Reset Progress" button, allowing them to clear all their module completion data.
+ */
 const LandingPage = ({
   trainingModules,
   completedModules,
   startModule,
-  progress = 0,
-  resetProgress, // Add resetProgress prop
+  progress = 0, // Note: progress display logic mainly uses completedModules.length
+  resetProgress,
 }) => {
+  /**
+   * @derived
+   * @type {boolean} allModulesCompleted - A boolean flag that is `true` if the number of completed modules
+   * equals the total number of available training modules, indicating the user has finished all training.
+   * Otherwise, it's `false`.
+   */
   const allModulesCompleted = completedModules.length === trainingModules.length;
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
+      {/* HERO SECTION */}
+      {/* This section includes the main headline, introductory paragraph,
+          visual icons (Protect, Secure, Learn), and a primary call-to-action button
+          to start or resume training. */}
       <div className="text-center mb-16">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
           Unlock Your Cyber Confidence: Start Learning Today!
@@ -47,6 +76,27 @@ const LandingPage = ({
             />
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{completedModules.length} of {trainingModules.length} modules completed.</p>
             <button 
+              onClick={resetProgress}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 text-sm"
+            >
+              Reset Progress
+            </button>
+          </div>
+        )}
+        
+        {/* PROGRESS SECTION (CONDITIONAL) */}
+        {/* This section is displayed only if the user has completed at least one module.
+            It shows a ProgressBar component visualizing their progress and a button to reset all progress. */}
+        {completedModules.length > 0 && (
+          <div className="max-w-xl mx-auto mt-8 mb-8">
+            <ProgressBar
+              current={completedModules.length}
+              total={trainingModules.length}
+              color={allModulesCompleted ? "bg-green-500" : "bg-blue-500"}
+              height="h-4"
+            />
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{completedModules.length} of {trainingModules.length} modules completed.</p>
+            <button
               onClick={resetProgress}
               className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 text-sm"
             >
@@ -85,7 +135,10 @@ const LandingPage = ({
           </button>
         </div>
       </div>
-      
+
+      {/* "WHY LEVEL UP" SECTION */}
+      {/* This promotional section highlights key benefits of the training platform
+          using icons and descriptive text. */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-16">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">Why Level Up Your Cyber Skills With Us?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -106,7 +159,14 @@ const LandingPage = ({
           </div>
         </div>
       </div>
-      
+
+      {/* AVAILABLE MODULES SECTION */}
+      {/* This section lists all the training modules.
+          - If all modules are completed, a congratulatory message is shown.
+          - It maps over the `trainingModules` array to render a `ModuleCard` for each.
+          - Logic within the map determines if a module is `isCompleted` or `inProgress`
+            (marked as `isNextUp` if it's the next available module and some progress exists).
+          - These states, along with the `startModule` function, are passed as props to `ModuleCard`. */}
       <div className="mb-16">
         {allModulesCompleted && (
           <div className="mb-8 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-md text-center shadow">
@@ -118,7 +178,9 @@ const LandingPage = ({
           {trainingModules.map((module) => {
             const isCompleted = completedModules.includes(module.id);
             const nextModuleIndex = completedModules.length;
+            // `isNextUp` identifies the module that immediately follows the last completed module.
             const isNextUp = !isCompleted && module.id === (trainingModules[nextModuleIndex]?.id);
+            // `inProgress` flags the `isNextUp` module if at least one module has already been completed.
             const inProgress = isNextUp && completedModules.length > 0;
             
             return (
@@ -133,7 +195,10 @@ const LandingPage = ({
           })}
         </div>
       </div>
-      
+
+      {/* TESTIMONIALS SECTION */}
+      {/* This section displays user testimonials with quotes and star ratings
+          to build credibility and encourage new users. */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">What Our Users Say</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -181,6 +246,9 @@ const LandingPage = ({
         </div>
       </div>
 
+      {/* PASSWORD STRENGTH CHECKER SECTION */}
+      {/* This section embeds the PasswordStrengthChecker component, offering users a utility
+          to check the strength of their passwords. */}
       <div className="mt-12 p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Is Your Password Strong Enough?</h2>
         <p className="text-gray-600 dark:text-gray-300 mb-4">Use our quick checker to see how your password stacks up!</p>

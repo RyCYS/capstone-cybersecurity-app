@@ -1,13 +1,43 @@
 // src/components/Certificate.jsx
-//Version 2.0 plz work  *DONE*
-
 import React, { useState } from 'react';
 import { FaDownload, FaCopy, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 
-// Certificate component to display the certificate after completion
+/**
+ * @component Certificate
+ * @description This component is responsible for displaying a certificate of completion to the user
+ * when all training modules are finished. It shows a unique certificate ID and provides options
+ * for the user to download the certificate as a text file or copy the unique ID to their clipboard.
+ * It also allows navigation back to the module listing.
+ *
+ * @props {object} props - The props for the component.
+ * @props {string} props.uniqueID - The unique identifier for the certificate, passed down from `App.jsx`.
+ * @props {function} props.onViewModules - A function passed from `App.jsx` that allows the user to
+ * navigate back to the module listing view (effectively by setting `uniqueID` to null in `App.jsx`).
+ */
 const Certificate = ({ uniqueID, onViewModules }) => {
+  /**
+   * @state {boolean} copied - Tracks whether the `uniqueID` has recently been copied to the clipboard.
+   * This is used to provide visual feedback to the user (e.g., changing button text to "Copied!").
+   */
   const [copied, setCopied] = useState(false);
 
+  /**
+   * @function downloadCertificate
+   * @description Handles the generation and download of the certificate as a plain text file.
+   * - Creates a data object containing the `uniqueID`, the current date as `issuedDate`,
+   *   and the `course` name.
+   * - Formats this data into a structured plain text string, which represents the certificate content.
+   * - Creates a `Blob` object from the certificate text with a `text/plain` MIME type.
+   * - Generates an object URL from the `Blob` using `URL.createObjectURL()`.
+   * - Dynamically creates an anchor (`<a>`) element.
+   * - Sets the `href` attribute of the anchor to the generated object URL and the `download`
+   *   attribute to a filename that includes the `uniqueID` (e.g., "Cybersecurity_Certificate_yourID.txt").
+   * - Programmatically clicks the anchor element to trigger the browser's download process.
+   * - Schedules the revocation of the object URL using `URL.revokeObjectURL()` after a 100ms delay
+   *   to ensure the download has initiated and to free up browser resources.
+   * - Includes error handling: if any part of this process fails, it logs an error to the console
+   *   and displays an alert message to the user.
+   */
   const downloadCertificate = () => {
     try {
       const data = {
@@ -41,6 +71,17 @@ Issued Date: ${new Date(data.issuedDate).toLocaleDateString()}
     }
   };
 
+  /**
+   * @function copyToClipboard
+   * @description Copies the `uniqueID` to the user's clipboard using the `navigator.clipboard` API.
+   * - Calls `navigator.clipboard.writeText()` with the `uniqueID`.
+   * - On successful copying:
+   *   - Sets the `copied` state to `true` to provide immediate visual feedback.
+   *   - Uses `setTimeout` to reset the `copied` state back to `false` after 2000 milliseconds (2 seconds).
+   * - On failure (e.g., if clipboard permissions are denied or the API is not supported):
+   *   - Logs an error to the console.
+   *   - Displays an alert message to the user indicating that the copy action failed.
+   */
   const copyToClipboard = () => {
     navigator.clipboard.writeText(uniqueID)
       .then(() => {
@@ -53,6 +94,20 @@ Issued Date: ${new Date(data.issuedDate).toLocaleDateString()}
       });
   };
 
+  /**
+   * @returns {JSX.Element} The rendered certificate display.
+   * - The main container is styled to center its content on the page.
+   * - Inside, a styled card (`div`) holds all certificate information and actions.
+   * - It displays a "Congratulations!" message with a checkmark icon.
+   * - The user's `uniqueID` is prominently displayed.
+   * - Two primary action buttons are provided:
+   *   - "Download (.txt)": Calls `downloadCertificate` when clicked.
+   *   - "Copy ID": Calls `copyToClipboard`. Its text changes to "Copied!" for 2 seconds
+   *     (controlled by the `copied` state) after a successful copy.
+   * - A brief message advises the user to keep their Certificate ID safe.
+   * - A "Review Modules" button is present, which, when clicked, calls the `onViewModules` prop function
+   *   to navigate the user back to the module listing page.
+   */
   return (
     <div className="container mx-auto px-4 py-12 md:py-16 flex items-center justify-center">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 md:p-12 max-w-lg w-full">

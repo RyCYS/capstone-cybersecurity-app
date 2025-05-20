@@ -1,6 +1,4 @@
 // src/App.jsx
-//App component is working as expected *DONE*
-
 import React, { useState, useEffect } from 'react';
 import trainingModules from './data/trainingModules';
 import LandingPage from './components/LandingPage';
@@ -10,22 +8,63 @@ import Header from './components/Header';
 import Footer from './components/Footer'; // Import Footer
 import { v4 as uuidv4 } from 'uuid';
 
-// Simple Spinner Component
+/**
+ * @component Spinner
+ * @description A simple functional component that renders a loading spinner.
+ * @returns {JSX.Element} The spinner element.
+ */
 const Spinner = () => (
   <div className="flex justify-center items-center">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-blue-400"></div>
   </div>
 );
 
-// Main component that will be rendered in the index.js file
+/**
+ * @component CybersecurityTrainingPlatform
+ * @description This is the main application component. It is responsible for managing the overall state,
+ * handling navigation between different views (LandingPage, Module, Certificate), and rendering these views.
+ * It also manages user progress, dark mode preference, and certificate generation.
+ */
 const CybersecurityTrainingPlatform = () => {
+  // STATE VARIABLES
+  /**
+   * @state {string|null} currentModuleId - Tracks the ID of the module currently being viewed.
+   * It's `null` if the user is on the landing page.
+   */
   const [currentModuleId, setCurrentModuleId] = useState(null);
+  /**
+   * @state {string[]} completedModules - An array storing the IDs of modules the user has successfully completed.
+   */
   const [completedModules, setCompletedModules] = useState([]);
+  /**
+   * @state {string|null} uniqueID - Stores a unique identifier (UUID v4) generated when all modules are completed.
+   * This ID is used for the certificate. It's `null` until all modules are completed.
+   */
   const [uniqueID, setUniqueID] = useState(null);
+  /**
+   * @state {boolean} darkMode - A boolean flag to toggle the dark mode theme for the application.
+   * `true` for dark mode, `false` for light mode.
+   */
   const [darkMode, setDarkMode] = useState(false);
+  /**
+   * @state {boolean} isLoading - A boolean flag to indicate if the application is currently loading
+   * initial data from localStorage (e.g., progress, dark mode preference).
+   * `true` while loading, `false` once initial loading is complete.
+   */
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from localStorage on initial render
+  // EFFECT HOOKS
+
+  /**
+   * @effect Loads `uniqueID`, `completedModules`, and `darkMode` preference from `localStorage`
+   * on initial component mount.
+   * - It checks `localStorage` for an existing `uniqueID` and `completedModules` and sets the state.
+   * - It also checks for a saved `darkMode` preference, sets the state, and applies the 'dark' class
+   *   to the document's root element if dark mode was previously enabled.
+   * - Includes error handling for `localStorage` access.
+   * - Sets `isLoading` to `false` after attempting to load all data.
+   * @dependency `[]` - Runs only once on component mount.
+   */
   useEffect(() => {
     try {
       // Check if uniqueID is already in localStorage
@@ -59,7 +98,13 @@ const CybersecurityTrainingPlatform = () => {
     setIsLoading(false);
   }, []);
 
-  // Save completed modules to localStorage whenever it changes
+  /**
+   * @effect Saves `completedModules` to `localStorage` whenever the `completedModules` state changes.
+   * - This effect runs only if `isLoading` is `false` to prevent writing to `localStorage` during
+   *   the initial data loading phase.
+   * - Includes error handling for `localStorage` access.
+   * @dependency `[completedModules, isLoading]` - Runs when `completedModules` or `isLoading` changes.
+   */
   useEffect(() => {
     if (!isLoading) {
       try {
@@ -70,7 +115,15 @@ const CybersecurityTrainingPlatform = () => {
     }
   }, [completedModules, isLoading]);
 
-  // Save dark mode preference to localStorage
+  /**
+   * @effect Saves `darkMode` preference to `localStorage` and applies/removes the 'dark' class
+   * from `document.documentElement` whenever the `darkMode` state changes.
+   * - This effect runs only if `isLoading` is `false`.
+   * - It updates `localStorage` with the current `darkMode` value.
+   * - It adds or removes the 'dark' class from the `<html>` element to apply the theme.
+   * - Includes error handling for `localStorage` access.
+   * @dependency `[darkMode, isLoading]` - Runs when `darkMode` or `isLoading` changes.
+   */
   useEffect(() => {
     if (!isLoading) {
       try {
@@ -87,6 +140,16 @@ const CybersecurityTrainingPlatform = () => {
     }
   }, [darkMode, isLoading]);
 
+  /**
+   * @effect Checks if all training modules are completed and if a `uniqueID` hasn't been generated yet.
+   * - This effect runs when `completedModules`, `uniqueID`, or `isLoading` changes.
+   * - It only proceeds if `isLoading` is `false` to avoid execution during initial load.
+   * - If all modules in `trainingModules` are present in the `completedModules` array and `uniqueID` is not yet set,
+   *   it generates a new `uniqueID` using `uuidv4()`.
+   * - The new `uniqueID` is then saved to both the component's state and `localStorage`.
+   * - Includes error handling for `localStorage` access.
+   * @dependency `[completedModules, uniqueID, isLoading]` - Runs when these state variables change.
+   */
   useEffect(() => {
     // Check if all modules are completed
     if (
@@ -105,13 +168,28 @@ const CybersecurityTrainingPlatform = () => {
       }
     }
   }, [completedModules, uniqueID, isLoading]);
-  
-  // Function to start a module
+
+  // KEY FUNCTIONS
+
+  /**
+   * @function startModule
+   * @description Sets the `currentModuleId` state to the given `moduleId`.
+   * This effectively navigates the user to the specified training module.
+   * @param {string} moduleId - The ID of the module to start.
+   */
   const startModule = (moduleId) => {
     setCurrentModuleId(moduleId);
   };
-  
-  // Function to handle the completion of the quiz
+
+  /**
+   * @function handleQuizCompletion
+   * @description Handles the logic after a user completes a module's quiz.
+   * - If the quiz is passed and the module isn't already in `completedModules`, it adds the `moduleId` to the array.
+   * - If passed and it's not the last module, it automatically navigates to the next module using `goToNextModule`.
+   * - If passed and it IS the last module, it calls `resetQuiz()` to navigate back to the landing page (where the certificate will be shown).
+   * @param {string} moduleId - The ID of the module whose quiz was completed.
+   * @param {boolean} passed - Indicates whether the user passed the quiz.
+   */
   const handleQuizCompletion = (moduleId, passed) => {
     if (passed && !completedModules.includes(moduleId)) {
       setCompletedModules((prevCompleted) => [...prevCompleted, moduleId]);
@@ -122,16 +200,27 @@ const CybersecurityTrainingPlatform = () => {
       goToNextModule(moduleId);
     } else if (passed && currentIndex === trainingModules.length - 1) {
       // If last module is passed, go back to landing page (which will show certificate)
-      resetQuiz(); 
+      resetQuiz();
     }
   };
-  
-  // Function to reset the quiz (go back to landing page)
+
+  /**
+   * @function resetQuiz
+   * @description Resets the `currentModuleId` state to `null`.
+   * This navigates the user back to the landing page.
+   */
   const resetQuiz = () => {
     setCurrentModuleId(null);
   };
-  
-  // Function to navigate to the next module
+
+  /**
+   * @function goToNextModule
+   * @description Navigates to the next module in the `trainingModules` sequence.
+   * - Finds the index of the `currentId` in the `trainingModules` array.
+   * - If there is a next module, it updates `currentModuleId` to the ID of the next module.
+   * - If the current module is the last one, it sets `currentModuleId` to `null`, navigating to the landing page.
+   * @param {string} currentId - The ID of the current module.
+   */
   const goToNextModule = (currentId) => {
     const currentIndex = trainingModules.findIndex(m => m.id === currentId);
     if (currentIndex < trainingModules.length - 1) {
@@ -141,8 +230,15 @@ const CybersecurityTrainingPlatform = () => {
       setCurrentModuleId(null);
     }
   };
-  
-  // Function to navigate to the previous module
+
+  /**
+   * @function goToPrevModule
+   * @description Navigates to the previous module in the `trainingModules` sequence.
+   * - Finds the index of the `currentId` in the `trainingModules` array.
+   * - If there is a previous module (index > 0), it updates `currentModuleId` to the ID of the previous module.
+   * - If the current module is the first one, it sets `currentModuleId` to `null`, navigating to the landing page.
+   * @param {string} currentId - The ID of the current module.
+   */
   const goToPrevModule = (currentId) => {
     const currentIndex = trainingModules.findIndex(m => m.id === currentId);
     if (currentIndex > 0) {
@@ -152,13 +248,25 @@ const CybersecurityTrainingPlatform = () => {
       setCurrentModuleId(null);
     }
   };
-  
-  // Function to toggle dark mode
+
+  /**
+   * @function toggleDarkMode
+   * @description Toggles the `darkMode` state between `true` and `false`.
+   * The actual application of the theme is handled by a `useEffect` hook listening to `darkMode`.
+   */
   const toggleDarkMode = () => {
     setDarkMode(prev => !prev);
   };
 
-  // Function to reset all progress
+  /**
+   * @function resetProgress
+   * @description Resets all user progress.
+   * - Prompts the user for confirmation before proceeding.
+   * - If confirmed, it clears `completedModules` and `uniqueID` from the state.
+   * - It also removes `completedModules` and `uniqueID` from `localStorage`.
+   * - Navigates the user back to the landing page by setting `currentModuleId` to `null`.
+   * - Includes error handling for `localStorage` removal.
+   */
   const resetProgress = () => {
     if (window.confirm("Are you sure you want to reset all your progress? This action cannot be undone.")) {
       setCompletedModules([]);
@@ -172,8 +280,17 @@ const CybersecurityTrainingPlatform = () => {
       }
     }
   };
-  
-  // Function to render the Module component
+
+  /**
+   * @function renderModule
+   * @description Renders the `Module` component for the `currentModuleId`.
+   * - Finds the module object from `trainingModules` that matches `currentModuleId`.
+   * - If no module is found (e.g., `currentModuleId` is `null` or invalid), it returns `null`.
+   * - Passes necessary props to the `Module` component, including the module data,
+   *   event handlers for quiz completion and navigation, and flags for identifying
+   *   the first/last module.
+   * @returns {JSX.Element|null} The `Module` component or `null`.
+   */
   const renderModule = () => {
     const module = trainingModules.find((m) => m.id === currentModuleId);
     if (!module) return null;
@@ -190,8 +307,17 @@ const CybersecurityTrainingPlatform = () => {
       />
     );
   };
-  
-  // Function to render the LandingPage component or the Certificate component
+
+  /**
+   * @function renderLandingPage
+   * @description Determines whether to render the `Certificate` or `LandingPage` component.
+   * - If a `uniqueID` exists and all modules are completed (i.e., `completedModules.length` equals `trainingModules.length`),
+   *   it renders the `Certificate` component, passing the `uniqueID` and a handler to allow viewing modules again
+   *   (which clears the `uniqueID` to show the landing page).
+   * - Otherwise, it renders the `LandingPage` component, passing `trainingModules`, `completedModules`,
+   *   the `startModule` function, current progress percentage, and the `resetProgress` function.
+   * @returns {JSX.Element} The `Certificate` or `LandingPage` component.
+   */
   const renderLandingPage = () => {
     // Show the Certificate component if all modules are completed and uniqueID exists
     if (uniqueID && completedModules.length === trainingModules.length) {
@@ -208,7 +334,8 @@ const CybersecurityTrainingPlatform = () => {
       />
     );
   };
-  
+
+  // Show spinner while loading initial data
   if (isLoading) {
     return (
       <div className={`flex flex-col min-h-screen ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-100'}`}>
@@ -220,7 +347,18 @@ const CybersecurityTrainingPlatform = () => {
       </div>
     );
   }
-  
+
+  /**
+   * MAIN RETURN STATEMENT
+   * - The root element is a `div` that dynamically applies classes for dark or light mode
+   *   using `darkMode` state. It also includes transition effects for color changes.
+   * - It renders the `Header` component, passing `darkMode` state and `toggleDarkMode` function as props.
+   * - The `main` content area fills the available space (`flex-grow`).
+   * - Inside `main`, it conditionally renders either:
+   *   - The output of `renderLandingPage()` (which could be `LandingPage` or `Certificate`) if `currentModuleId` is `null`.
+   *   - The output of `renderModule()` if a `currentModuleId` is set.
+   * - Finally, it renders the `Footer` component, passing the `darkMode` state.
+   */
   return (
     <div className={`flex flex-col min-h-screen ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-100'} transition-colors duration-300`}>
       <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
